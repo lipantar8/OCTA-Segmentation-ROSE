@@ -29,3 +29,12 @@ results/*
 # OS files
 .DS_Store
 Thumbs.db
+
+# Local datasets
+data/
+
+# Local configuration files containing machine-specific paths
+configs/paths.yaml
+
+# Model checkpoints
+checkpoints/*.pth
