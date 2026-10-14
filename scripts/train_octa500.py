@@ -189,7 +189,7 @@ for epoch in range(EPOCHS):
 
         torch.save(
             model.state_dict(),
-            "results/best_model_OCTA500.pth"
+            "checkpoints/best_model_OCTA500.pth"
         )
 
 
