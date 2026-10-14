@@ -8,7 +8,10 @@ def train_one_epoch(model, loader, optimizer, loss_fn, device):
 
     model.train()
 
-    scaler = torch.amp.GradScaler("cuda")
+    scaler = torch.amp.GradScaler(
+    "cuda",
+    enabled=(device == "cuda")
+    )
 
     total_loss = 0
     total_dice = 0
@@ -22,7 +25,10 @@ def train_one_epoch(model, loader, optimizer, loss_fn, device):
         images = images.to(device)
         masks = masks.to(device)
 
-        with torch.amp.autocast("cuda"):
+        with torch.amp.autocast(
+            device_type=device,
+            enabled=(device == "cuda")
+        ):
 
             outputs = model(images)
 

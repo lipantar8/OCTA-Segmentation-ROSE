@@ -411,7 +411,8 @@ def evaluate_topology_thick(
                             morph_op=cfg["morph_op"],
                             kernel_size=cfg["kernel_size"],
                             smooth=cfg["smooth"],
-                            min_area=cfg["min_area"]
+                            min_area=cfg["min_area"],
+                            do_skeleton=False
                         )
                     )
 
