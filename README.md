@@ -1,50 +1,98 @@
-# ROSE-OCTA-segmentation
+# OCTA-Segmentation-ROSE
 
-Deep learning framework for retinal OCTA vessel segmentation and quantitative biomarker analysis on the ROSE dataset.
+Deep learning framework for retinal vessel segmentation in Optical Coherence Tomography Angiography (OCTA) images, with topology-aware evaluation and vascular biomarker analysis.
 
 ## Overview
 
-This repository contains the code developed for retinal vessel segmentation from Optical Coherence Tomography Angiography (OCTA) images.
+This repository contains the implementation of a deep learning pipeline for retinal vessel segmentation from OCTA images.
 
-The project investigates deep learning-based segmentation methods for accurate extraction of retinal vascular structures and subsequent quantitative analysis through morphological biomarkers.
+The framework focuses on accurate extraction of retinal vascular structures while preserving vascular topology, enabling quantitative analysis through segmentation metrics and morphological biomarkers.
 
-The framework includes:
+The pipeline includes:
 
 - OCTA image preprocessing
-- deep learning-based vessel segmentation
-- model training and evaluation
-- topology-aware segmentation assessment
-- retinal vascular biomarker extraction
+- Attention U-Net based vessel segmentation
+- multi-stage training strategy
+- topology-aware evaluation
+- morphological post-processing analysis
+- vascular biomarker extraction
 
-## Pipeline
+## Methodology
 
-The proposed pipeline consists of:
+The proposed training strategy follows a progressive domain adaptation pipeline:
 
-1. Dataset preparation and preprocessing
-2. Deep learning model training
-3. Segmentation inference
-4. Quantitative evaluation using segmentation metrics
-5. Extraction of vascular biomarkers from predicted vessel maps
+1. **Generic vessel segmentation pre-training**
+
+   The model is initially trained on the FIVES fundus vessel segmentation dataset to learn general retinal vessel representations.
+
+2. **OCTA domain adaptation**
+
+   The model is adapted to OCTA characteristics using the OCTA-500 dataset with fused large vessel and capillary annotations.
+
+3. **ROSE-1 fine-tuning**
+
+   The adapted model is fine-tuned on the ROSE-1 OCTA dataset for superficial and full retinal vascular segmentation.
+
+## Model Architecture
+
+The implemented segmentation model is:
+
+- Attention U-Net architecture
+- ResNet34 encoder backbone
+- ImageNet pretrained encoder weights
+- SCSE decoder attention mechanism
+- Binary vessel segmentation output
+
+Training uses a hybrid loss function:
+
+- 70% Dice Loss
+- 30% Binary Cross Entropy Loss
+
+## Evaluation
+
+Segmentation performance is evaluated using:
+
+- Dice Similarity Coefficient (DSC)
+- clDice topology-aware metric
+- category-specific Dice analysis
+- morphological post-processing comparison
+
+Topology-aware analysis includes:
+
+- skeleton extraction
+- vessel connectivity evaluation
+- morphological filtering
+- post-processing grid search
 
 ## Repository Structure
 
 ```
-ROSE-OCTA-segmentation/
-│
+OCTA-Segmentation-ROSE/
+
 ├── src/
-│   ├── datasets/          # Dataset loading and preprocessing
-│   ├── models/            # Neural network architectures
-│   ├── training/          # Training and validation pipelines
-│   ├── evaluation/        # Metrics and biomarker computation
-│   ├── postprocessing/    # Segmentation refinement methods
-│   └── utils/             # Utility functions
+│   ├── datasets/              # Dataset loading and preprocessing
+│   ├── models/                # Neural network architectures
+│   ├── training/              # Training and validation routines
+│   ├── evaluation/            # Metrics and topology analysis
+│   ├── losses/                # Loss functions
+│   └── utils/                 # Utility functions
 │
-├── notebooks/             # Jupyter notebooks
-├── configs/               # Configuration files
-├── figures/               # Generated figures
-├── results/               # Experimental results
+├── scripts/
+│   ├── train_fives.py         # FIVES pre-training
+│   ├── train_octa500.py       # OCTA-500 domain adaptation
+│   ├── train_rose.py          # ROSE-1 fine-tuning
+│   ├── evaluate_rose.py       # Quantitative evaluation
+│   ├── visualize_results.py   # Result visualization
+│   └── test_setup.py          # Repository setup test
 │
-├── requirements.txt       # Python dependencies
+├── configs/
+│   └── paths.yaml             # Local dataset configuration
+│
+├── checkpoints/               # Saved model weights
+├── results/                   # Evaluation outputs
+├── figures/                   # Generated figures
+│
+├── requirements.txt
 └── README.md
 ```
 
@@ -53,8 +101,26 @@ ROSE-OCTA-segmentation/
 Clone the repository:
 
 ```bash
-git clone https://github.com/USERNAME/ROSE-OCTA-segmentation.git
-cd ROSE-OCTA-segmentation
+git clone https://github.com/lipantar8/OCTA-Segmentation-ROSE.git
+cd OCTA-Segmentation-ROSE
+```
+
+Create and activate a virtual environment:
+
+```bash
+python -m venv .venv
+```
+
+Windows:
+
+```bash
+.venv\Scripts\activate
+```
+
+Linux/macOS:
+
+```bash
+source .venv/bin/activate
 ```
 
 Install dependencies:
@@ -63,38 +129,116 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
-## Dataset
+## Dataset Configuration
 
-The datasets are not included in this repository.
+Datasets are not included in this repository.
 
-The experiments are performed on publicly available retinal OCTA datasets. Dataset paths should be configured locally before running the training and evaluation scripts.
+The required datasets are:
+
+- FIVES
+- OCTA-500
+- ROSE-1
+
+Dataset locations must be specified locally in:
+
+```
+configs/paths.yaml
+```
+
+Example:
+
+```yaml
+datasets:
+
+  ROSE:
+    SVC:
+      images: /path/to/images
+      masks: /path/to/masks
+```
 
 ## Training
 
-Training scripts will be provided to reproduce the experiments described in the paper.
+The complete training pipeline consists of three stages.
 
+### 1. FIVES pre-training
+
+```bash
+python scripts/train_fives.py
+```
+
+Output:
+
+```
+checkpoints/best_model_FIVES.pth
+```
+
+### 2. OCTA-500 domain adaptation
+
+```bash
+python scripts/train_octa500.py
+```
+
+Output:
+
+```
+checkpoints/best_model_OCTA500.pth
+```
+
+### 3. ROSE-1 fine-tuning
+
+```bash
+python scripts/train_rose.py
+```
+
+Output:
+
+```
+checkpoints/best_model_ROSE_fold*.pth
+```
 
 ## Evaluation
 
-Segmentation performance is evaluated using:
+Run:
 
-- Dice Similarity Coefficient (DSC)
-- clDice
-- sensitivity and specificity
-- topology-aware metrics
+```bash
+python scripts/evaluate_rose.py
+```
 
-The framework also includes quantitative analysis of retinal vascular biomarkers extracted from segmentation maps.
+Generated results:
 
-## Results
+```
+results/
 
-Experimental results and generated figures will be added in the `results/` and `figures/` folders.
+├── evaluation_results.csv
+└── topology_results.csv
+```
+
+Visualization:
+
+```bash
+python scripts/visualize_results.py
+```
+
+Figures are saved in:
+
+```
+results/figures/
+```
+
+## Reproducibility
+
+The repository is designed to reproduce the complete experimental pipeline.
+
+Due to dataset licensing restrictions, images and annotations are not distributed with this repository.
+
+Users must download the datasets independently and configure local paths before running experiments.
 
 ## Citation
 
-If you use this code, please cite:
+If you use this repository, please cite:
 
 ```
-Paper citation will be added after publication.
+Citation will be added after publication.
 ```
 
 ## License
